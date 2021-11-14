@@ -6,6 +6,10 @@
 ************************************************/
 #include "main.h" 
 
+#include "CGame.h"
+#include "CLanguage.h"
+#include "CRender.h"
+
 /**
 * @brief Возращает путь до шрифта по его "Face name"
 * @param faceName "Face name" шрифта

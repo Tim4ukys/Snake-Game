@@ -30,6 +30,8 @@ public:
 
 };
 
+class CLanguage;
+
 /**
 * @brief Класс игры
 * @date 13.09.2021

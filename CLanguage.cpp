@@ -6,6 +6,8 @@
 ************************************************/
 #include "main.h"
 
+#include "CLanguage.h"
+
 CLanguage::stWords<std::string> CLanguage::getTranslateWordsA(std::wstring vKey)
 {
 	pLog->regLastFnc("CLanguage::getTranslateWordsA()");
