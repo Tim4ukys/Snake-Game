@@ -6,6 +6,9 @@
 ************************************************/
 #include "main.h"
 
+#include "CRender.h"
+#include "CGame.h"
+
 CRender* pRender    = nullptr;
 CGame* pGame        = nullptr;
 

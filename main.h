@@ -41,13 +41,13 @@
 using json = nlohmann::json;
 
 #include "CLog.h"
-#include "CLanguage.h"
-#include "CRender.h"
-#include "CGame.h"
+//#include "CLanguage.h"
+//#include "CRender.h"
+//#include "CGame.h"
 
 extern CLog* pLog;
-extern CRender* pRender;
-extern CGame* pGame;
+extern class CRender* pRender;
+extern class CGame* pGame;
 
 /**
 * @brief Возращает случайное значение

@@ -6,6 +6,9 @@
 ************************************************/
 #include "main.h"
 
+#include "CRender.h"
+#include "CGame.h"
+
 inline D3DCOLOR D3DCOLOR_XRGB_ARRAY(const int* a)
 {
     return D3DCOLOR_XRGB(a[0], a[1], a[2]);
