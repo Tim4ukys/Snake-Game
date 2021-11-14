@@ -121,6 +121,5 @@ CRender::CRender()
 }
 CRender::~CRender()
 {
-    SAFE_RELEASE(pDevice);
-    SAFE_RELEASE(pD3D);
+    CleanupD3D();
 }
