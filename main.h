@@ -9,6 +9,8 @@
 
 #pragma warning(disable : 4244)
 #pragma warning(disable : 4996)
+#pragma warning(disable : 4005)
+#pragma warning(disable : 4838)
 
 // STL
 #include <string>
@@ -26,9 +28,20 @@
 #include <cstdint>
 // WIN-API
 #include <Windows.h>
+#include <xaudio2.h>
+#include <strsafe.h>
+#include <shellapi.h>
+#include <mmsystem.h>
+#include <conio.h>
 // DirectX Library
 #include <d3d9.h>
 #include <d3dx9.h>
+
+#pragma comment(lib, "d3d9.lib")
+#pragma comment(lib, "d3dx9.lib")
+#pragma comment(lib, "dsound.lib")
+#pragma comment(lib, "dxguid.lib")
+#pragma comment(lib, "comctl32.lib")
 // Other Library
 #include "d3drender.h"
 #include "nlohmann/json.hpp"
@@ -36,7 +49,7 @@
 #include "ocornut/imgui/imgui.h"
 #include "ocornut/imgui/imgui_impl_dx9.h"
 #include "ocornut/imgui/imgui_impl_win32.h"
-#include "un4seen/bass dll/bass.h"
+//#include "un4seen/bass dll/bass.h"
 
 using json = nlohmann::json;
 
@@ -49,6 +62,9 @@ extern CLog* pLog;
 extern class CRender* pRender;
 extern class CGame* pGame;
 
+#define SAFE_DELETE(p) if (p){ delete p; p=nullptr; }
+#define SAFE_DELETE_ARRAY(arr) if (arr){ delete[] arr; arr=nullptr; }
+
 /**
 * @brief Возращает случайное значение
 * @param min Минимальное значение
@@ -59,8 +75,8 @@ template <typename T>
 inline T random(T min, T max)
 {
 	pLog->regLastFnc("random()");
-	static std::random_device rd;
-	static std::default_random_engine e1(rd());
+	std::random_device rd;
+	std::default_random_engine e1(rd());
 	std::uniform_int_distribution<T> uniform_dist(min, max);
 	return uniform_dist(e1);
 }
@@ -115,11 +131,6 @@ inline std::wstring getCurrentPath() {
 		rel = std::wstring(tempBuff, wcslen(tempBuff));
 	}
 	return rel;
-} 
-
-#pragma comment(lib, "un4seen/bass dll/bass.lib")
-
-#pragma comment(lib, "d3d9.lib")
-#pragma comment(lib, "d3dx9.lib")
+}
 
 #endif

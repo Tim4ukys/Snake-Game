@@ -220,8 +220,17 @@ private:
 		*/
 		void play(MUSIC music_id, BOOL restart = FALSE);
 
+		IXAudio2* pXAudio2 = nullptr;
+		IXAudio2MasteringVoice* pMasteringVoice = nullptr;
+
 		bool state{};
-		std::array<HSTREAM, 7U> arrMusic{};
+
+		struct musData {
+			class CWaveFile* m_pWAV;
+			LPBYTE m_pbWaveData;
+			DWORD m_cbWaveSize;
+		};
+		std::array<std::pair<musData, IXAudio2SourceVoice*>/*HSTREAM*/, 7U> arrMusic{};
 	} music;
 
 	struct stGameOver {

@@ -48,17 +48,17 @@ public:
 	* @brief ”казатель на \b Device
 	* @return Device DirectX
 	*/
-	inline IDirect3DDevice9* getDevice()
-	{
-		return pDevice;
-	}
+	//inline IDirect3DDevice9* getDevice()
+	//{
+		//return pDevice;
+	//}
 
 private:
 
 	const int CLEAR_COLOR[3]{ 0x0, 0x0, 0x0 };
 
-	IDirect3DDevice9* pDevice = NULL;
-	IDirect3D9* pD3D = nullptr;
+	//IDirect3DDevice9* pDevice = NULL;
+	//IDirect3D9* pD3D = nullptr;
 	//IDirect3DSurface9* m_pSurface = nullptr;
 
 	bool initDirectX{};

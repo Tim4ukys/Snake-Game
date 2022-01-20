@@ -73,6 +73,8 @@ private:
 	*/
 	void loadSafeWords();
 
+	bool m_bSafeMode{};
+
 	std::map<std::wstring, stWords<std::string>> mapWordsA{};
 	std::map<std::wstring, stWords<std::wstring>> mapWordsW{};
 };

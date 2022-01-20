@@ -15,26 +15,26 @@ DIRECTX_VERSION g_Version{};
 /////      EVENTS      /////
 ////////////////////////////
 
-std::vector<CALLBACK_ADDRENDER> g_fncCallBackRender{};
-void AddRenderCallBack(CALLBACK_ADDRENDER fnc)
+std::vector<std::function < CALLBACK_ADDRENDER > > g_fncCallBackRender{};
+void AddRenderCallBack(std::function < CALLBACK_ADDRENDER > fnc)
 {
 	g_fncCallBackRender.push_back(fnc);
 }
 
-std::vector<CALLBACK_LOSTRESET> g_fncCallBackLostReset{};
-void AddLostResetCallBack(CALLBACK_LOSTRESET fnc)
+std::vector<std::function < CALLBACK_LOSTRESET>> g_fncCallBackLostReset{};
+void AddLostResetCallBack(std::function < CALLBACK_LOSTRESET> fnc)
 {
 	g_fncCallBackLostReset.push_back(fnc);
 }
 
-std::vector<CALLBACK_RESET> g_fncCallBackReset{};
-void AddResetCallBack(CALLBACK_RESET fnc)
+std::vector<std::function < CALLBACK_RESET >> g_fncCallBackReset{};
+void AddResetCallBack(std::function < CALLBACK_RESET > fnc)
 {
 	g_fncCallBackReset.push_back(fnc);
 }
 
-std::vector<CALLBACK_INITDIRECTX> g_fncCallBackInitDirectX{};
-void AddInitDirectXCallBack(CALLBACK_INITDIRECTX fnc)
+std::vector<std::function < CALLBACK_INITDIRECTX >> g_fncCallBackInitDirectX{};
+void AddInitDirectXCallBack(std::function < CALLBACK_INITDIRECTX > fnc)
 {
 	g_fncCallBackInitDirectX.push_back(fnc);
 }
@@ -70,7 +70,7 @@ void ResetObjects()
 	}
 }
 
-void Draw()
+void DirectXDraw()
 {
 	if (g_pDevice.UNKOWN)
 	{
@@ -165,25 +165,25 @@ HRESULT InitDirectX(DIRECTX_VERSION vers, HWND hWnd)
 	case DIRECTX_VERSION::DIRECTX9:
 		{
 			g_Direct3D9 = Direct3DCreate9(D3D_SDK_VERSION);
-			if (g_Direct3D9)
+			if (!g_Direct3D9)
 				return S_FALSE;
 
 			g_pDevicePTR = reinterpret_cast<D3DPRESENT_PARAMETERS*>(malloc(sizeof(D3DPRESENT_PARAMETERS)));
+			ZeroMemory(g_pDevicePTR, sizeof(D3DPRESENT_PARAMETERS));
 			g_pDevicePTR->Windowed = TRUE;
 			g_pDevicePTR->SwapEffect = D3DSWAPEFFECT_DISCARD;
 			g_pDevicePTR->BackBufferFormat = D3DFMT_UNKNOWN;
 
-			auto pDevice = &g_pDevice.pD3D9Device;
-
 			hr = g_Direct3D9->CreateDevice(
 				D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd,
 				D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_NOWINDOWCHANGES,
-				g_pDevicePTR, pDevice);
+				g_pDevicePTR, &g_pDevice.pD3D9Device);
 			if (FAILED(hr))
 			{
 				SAFE_RELEASE(g_Direct3D9);
 				return false;
 			}
+			resetDevice();
 		}
 		break;
 	case DIRECTX_VERSION::DIRECTX10:

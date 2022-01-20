@@ -10,6 +10,8 @@
 #include "CLanguage.h"
 #include "CRender.h"
 
+#include "SDKwavefile.h"
+
 /**
 * @brief Возращает путь до шрифта по его "Face name"
 * @param faceName "Face name" шрифта
@@ -430,7 +432,7 @@ void CGame::Render(IDirect3DDevice9* pDevice)
 
 		if (snake.vSnake.at(0).x == apple.x && snake.vSnake.at(0).y == apple.y && !win.isWin) {
 			snake.add();
-			static size_t winSize = (maxBlock - 1) * (maxBlock - 1);
+			static const size_t winSize = (maxBlock - 1) * (maxBlock - 1);
 			if (snake.vSnake.size() == winSize)
 			{
 				win.isWin = true;
@@ -569,10 +571,47 @@ void CSnake::add()
 	isAdd = true;
 }
 
+std::vector<IXAudio2SourceVoice*> g_pDestMusic{};
+HANDLE g_hThreadCleanMusicThash;
+void cleanMusicTrash()
+{
+	while (true)
+	{
+		Sleep(1000);
+		for (size_t i{}; i < g_pDestMusic.size(); i++)
+		{
+			auto& pMusic = g_pDestMusic.at(i);
+			XAUDIO2_VOICE_STATE state;
+			pMusic->GetState(&state);
+			if (!state.BuffersQueued) {
+				pMusic->DestroyVoice();
+				g_pDestMusic.erase(g_pDestMusic.begin() + (int)i);
+			}
+		}
+	}
+}
+
 void CGame::stMusic::play(MUSIC music_id, BOOL restart)
 {
 	pLog->regLastFnc("CGame::stMusic::play()");
-	if (state) BASS_ChannelPlay(arrMusic.at(music_id), restart);
+	//if (state) BASS_ChannelPlay(arrMusic.at(music_id), restart);
+	if (state) {
+		auto& m = arrMusic.at(music_id);
+
+		IXAudio2SourceVoice* pSourceVoice;
+		WAVEFORMATEX* pwfx = m.first.m_pWAV->GetFormat();
+		pXAudio2->CreateSourceVoice(&pSourceVoice, pwfx);
+
+		g_pDestMusic.push_back(pSourceVoice);
+
+		XAUDIO2_BUFFER buffer = { 0 };
+		buffer.pAudioData = m.first.m_pbWaveData;
+		buffer.Flags = XAUDIO2_END_OF_STREAM;  // tell the source voice not to expect any data after this buffer
+		buffer.AudioBytes = m.first.m_cbWaveSize;
+		pSourceVoice->SubmitSourceBuffer(&buffer);
+
+		pSourceVoice->Start();
+	}
 }
 
 void CGame::loadConfig()
@@ -622,21 +661,69 @@ void CGame::saveConfig()
 CGame::CGame(HWND hwnd, LPDIRECT3DDEVICE9 pDevice)
 {
 	pLog->regLastFnc("CGame::CGame()");
-	if (!BASS_Init(-1, 44100, 0, 0, NULL))
+
+	auto fnSoundInit = [this]()->bool {
+		CoInitializeEx(NULL, COINIT_MULTITHREADED);
+		
+		if (FAILED(XAudio2Create(&music.pXAudio2)))
+		{
+			CoUninitialize();
+			return false;
+		}
+
+		if (UINT32 count; !FAILED(music.pXAudio2->GetDeviceCount(&count)))
+		{
+			for (size_t i{}; i < count; i++)
+			{
+				XAUDIO2_DEVICE_DETAILS dev;
+
+				if (!FAILED(music.pXAudio2->GetDeviceDetails(i, &dev)))
+					pLog->log("dev[%d].DisplayName: %s", i, string_from_wstring(dev.DisplayName).c_str());
+			}
+		}
+
+		if (FAILED(music.pXAudio2->CreateMasteringVoice(&music.pMasteringVoice)))
+		{
+			SAFE_RELEASE(music.pXAudio2);
+			CoUninitialize();
+			return false;
+		}
+
+		g_hThreadCleanMusicThash = CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)&cleanMusicTrash, NULL, NULL, NULL);
+
+		return true;
+	};
+
+	if (!fnSoundInit()/*BASS_Init(-1, 44100, 0, 0, NULL)*/)
 		PostQuitMessage(-1);
 
 	for (size_t i = 0; i < music.arrMusic.size(); i++)
 	{
-		std::wstring path = getCurrentPath() + L"\\music\\" + std::to_wstring(i + 1) + L".mp3";
-		music.arrMusic.at(i) = BASS_StreamCreateFile(FALSE, path.c_str(), NULL, NULL, NULL);
-		BASS_ChannelSetAttribute(music.arrMusic.at(i), BASS_ATTRIB_VOL, 1.0f);
+		std::wstring path = getCurrentPath() + L"\\music\\" + std::to_wstring(i + 1) + L".wav";
+
+		CWaveFile* pWav = music.arrMusic.at(i).first.m_pWAV = new CWaveFile();
+		if (FAILED(pWav->Open((LPWSTR)path.c_str(), NULL, WAVEFILE_READ)))
+		{
+			continue;
+		}
+
+		DWORD cbWaveSize = music.arrMusic.at(i).first.m_cbWaveSize = pWav->GetSize();
+
+		// Read the sample data into memory
+		BYTE* pbWaveData = music.arrMusic.at(i).first.m_pbWaveData = new BYTE[cbWaveSize];
+
+		if (FAILED(pWav->Read(pbWaveData, cbWaveSize, &cbWaveSize)))
+		{
+			SAFE_DELETE_ARRAY(music.arrMusic.at(i).first.m_pbWaveData);
+			continue;
+		}
 	}
 
 	multi_lang.pLanguage = new CLanguage();
 	loadConfig();
 
 
-	pRender->getDevice()->ShowCursor(FALSE);
+	//pRender->getDevice()->ShowCursor(FALSE);
 
 	ImGui::CreateContext();
 	ImGui_ImplWin32_Init(hwnd);
@@ -660,16 +747,31 @@ CGame::~CGame()
 {
 	if (multi_lang.pLanguage) delete multi_lang.pLanguage;
 
+	TerminateThread(g_hThreadCleanMusicThash, -1);
+	for (auto& pMusic : g_pDestMusic)
+	{
+		pMusic->DestroyVoice();
+	}
+	g_pDestMusic.clear();
+
 	for (size_t i = 0; i < music.arrMusic.size(); i++)
 	{
-		HSTREAM ch = music.arrMusic.at(i);
+		/*HSTREAM ch = music.arrMusic.at(i);
 		BASS_ChannelStop(ch);
-		BASS_ChannelFree(ch);
+		BASS_ChannelFree(ch);*/
+
+		//music.arrMusic.at(i).second->DestroyVoice();
+		SAFE_DELETE(music.arrMusic.at(i).first.m_pWAV);
+		SAFE_DELETE_ARRAY(music.arrMusic.at(i).first.m_pbWaveData);
 	}
 
 	saveConfig();
 
-	BASS_Free();
+	//BASS_Free();
+	music.pMasteringVoice->DestroyVoice();
+
+	SAFE_RELEASE(music.pXAudio2);
+	CoUninitialize();
 }
 
 void CGame::updateApplePos()
@@ -680,7 +782,7 @@ void CGame::updateApplePos()
 	do {
 		xn = random<int>(0, maxBlock - 1), yn = random<int>(0, maxBlock - 1);
 		for (size_t i = 0; i < snake.vSnake.size(); i++) {
-			if (snake.vSnake.at(i).x == xn || snake.vSnake.at(i).y == yn) break;
+			if (snake.vSnake.at(i).x == xn && snake.vSnake.at(i).y == yn) break;
 
 			if (snake.vSnake.size() - 1U == i) rel = true;
 		}

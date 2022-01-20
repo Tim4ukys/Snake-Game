@@ -72,10 +72,10 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR szCmdLine, int nCmdS
     if (hwnd == INVALID_HANDLE_VALUE)
         return EXIT_FAILURE;
 
+    pRender->initD3D(hwnd);
+
     ShowWindow(hwnd, nCmdShow);
     UpdateWindow(hwnd);
-
-    pRender->initD3D(hwnd);
 
     while (GetMessage(&msg, nullptr, 0, 0))
     {

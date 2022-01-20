@@ -11,7 +11,7 @@
 CLanguage::stWords<std::string> CLanguage::getTranslateWordsA(std::wstring vKey)
 {
 	pLog->regLastFnc("CLanguage::getTranslateWordsA()");
-	return mapWordsA.at(vKey);
+	return mapWordsA.at(!m_bSafeMode ? vKey : L"English");
 }
 
 CLanguage::stWords<std::wstring> CLanguage::getTranslateWordsW(std::wstring vKey)
@@ -60,7 +60,7 @@ bool CLanguage::reloadFiles()
 	HANDLE hFind = FindFirstFileW((getCurrentPath() + L"\\language\\*.json").c_str(), &files_folders_list);
 	if (hFind == INVALID_HANDLE_VALUE) {
 		loadSafeWords();
-		return false;
+		return (m_bSafeMode = true) ^ true;
 	}
 	do {
 		if (FILE_ATTRIBUTE_DIRECTORY == files_folders_list.dwFileAttributes) continue;
@@ -101,7 +101,7 @@ bool CLanguage::reloadFiles()
 		mapWordsW[key].settings.sound = wstring_from_string(mapWordsA[key].settings.sound);
 
 	} while (FindNextFileW(hFind, &files_folders_list));
-	return true;
+	return (m_bSafeMode = false) ^ true;
 }
 
 CLanguage::CLanguage()

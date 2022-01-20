@@ -56,5 +56,7 @@ void CLog::log(const char* fmt, ...)
 
 void CLog::regLastFnc(std::string fncName)
 {
+#ifdef _DEBUG
 	lastFuncName = fncName;
+#endif
 }
