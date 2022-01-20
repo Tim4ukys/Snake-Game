@@ -8,7 +8,6 @@
 //
 // Copyright (c) Microsoft Corporation. All rights reserved.
 //--------------------------------------------------------------------------------------
-#include "main.h"
 #include "DXUT.h"
 #include "SDKMesh.h"
 #include "SDKMisc.h"

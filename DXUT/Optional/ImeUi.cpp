@@ -3,7 +3,6 @@
 //
 // Copyright (c) Microsoft Corporation. All rights reserved.
 //--------------------------------------------------------------------------------------
-#include "main.h"
 #include "dxut.h"
 #include "ImeUi.h"
 #include <math.h>

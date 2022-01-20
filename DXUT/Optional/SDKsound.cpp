@@ -8,7 +8,6 @@
 // Copyright (c) Microsoft Corp. All rights reserved.
 //-----------------------------------------------------------------------------
 #define STRICT
-#include "main.h"
 #include "DXUT.h"
 #include <mmsystem.h>
 #include <dsound.h>
