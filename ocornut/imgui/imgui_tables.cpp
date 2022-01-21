@@ -4048,4 +4048,3 @@ void ImGui::Columns(int columns_count, const char* id, bool border)
 //-------------------------------------------------------------------------
 
 #endif // #ifndef IMGUI_DISABLE
-#include "main.h"

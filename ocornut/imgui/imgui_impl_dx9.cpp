@@ -375,4 +375,3 @@ void ImGui_ImplDX9_NewFrame()
     if (!bd->FontTexture)
         ImGui_ImplDX9_CreateDeviceObjects();
 }
-#include "main.h"
