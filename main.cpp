@@ -83,7 +83,9 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR szCmdLine, int nCmdS
         DispatchMessage(&msg);
     }
 
-    delete pRender, pGame, pLog;
+    SAFE_DELETE(pRender); 
+    SAFE_DELETE(pGame); 
+    SAFE_DELETE(pLog);
 
     return static_cast<int> (msg.wParam);
 }
