@@ -16,7 +16,7 @@ CLog* pLog = nullptr; // { "logger.log" }
 
 int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR szCmdLine, int nCmdShow)
 {
-    pLog = new CLog("logget.log");
+    pLog = new CLog("logger.log");
 
     pRender = new CRender();
 
