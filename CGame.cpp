@@ -573,9 +573,9 @@ void CSnake::add()
 
 std::vector<IXAudio2SourceVoice*> g_pDestMusic{};
 HANDLE g_hThreadCleanMusicThash;
-void cleanMusicTrash()
+void cleanMusicTrash(PVOID param)
 {
-	while (true)
+	while (!*reinterpret_cast<PBOOL>(param))
 	{
 		Sleep(1000);
 		for (size_t i{}; i < g_pDestMusic.size(); i++)
@@ -689,7 +689,7 @@ CGame::CGame(HWND hwnd, LPDIRECT3DDEVICE9 pDevice)
 			return false;
 		}
 
-		g_hThreadCleanMusicThash = CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)&cleanMusicTrash, NULL, NULL, NULL);
+		g_hThreadCleanMusicThash = CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)&cleanMusicTrash, &music.m_nIsStopClearThread, NULL, NULL);
 
 		return true;
 	};
@@ -747,7 +747,11 @@ CGame::~CGame()
 {
 	if (multi_lang.pLanguage) delete multi_lang.pLanguage;
 
-	TerminateThread(g_hThreadCleanMusicThash, -1);
+	//TerminateThread(g_hThreadCleanMusicThash, -1);
+	music.m_nIsStopClearThread = TRUE;
+	WaitForSingleObject(g_hThreadCleanMusicThash, INFINITE);
+	CloseHandle(g_hThreadCleanMusicThash);
+
 	for (auto& pMusic : g_pDestMusic)
 	{
 		pMusic->DestroyVoice();

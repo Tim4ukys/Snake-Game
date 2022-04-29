@@ -231,6 +231,8 @@ private:
 			DWORD m_cbWaveSize;
 		};
 		std::array<std::pair<musData, IXAudio2SourceVoice*>/*HSTREAM*/, 7U> arrMusic{};
+
+		BOOL m_nIsStopClearThread = FALSE;
 	} music;
 
 	struct stGameOver {
